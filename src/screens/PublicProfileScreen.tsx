@@ -1,19 +1,22 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Star, MapPin, CheckCircle2, Shield, Calendar } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, CheckCircle2, Shield, Calendar, BadgeCheck } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 interface ProfileData {
   id: string;
-  first_name: string;
-  last_name: string;
-  avatar_url: string;
-  bio: string;
-  rating: number;
-  reviews_count: number;
-  missions_completed: number;
-  skills: string[];
+  first_name?: string | null;
+  last_name?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
+  role?: 'client' | 'provider' | 'both' | null;
+  rating?: number | null;
+  reviews_count?: number | null;
+  missions_completed?: number | null;
+  skills?: string[] | null;
+  address?: string | null;
+  is_available?: boolean | null;
   created_at: string;
 }
 
@@ -23,10 +26,16 @@ interface ReviewData {
   comment: string;
   created_at: string;
   reviewer: {
-    first_name: string;
-    last_name: string;
-    avatar_url: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    avatar_url?: string | null;
   };
+}
+
+function getRoleLabel(role?: ProfileData['role']) {
+  if (role === 'provider') return 'Realisateur';
+  if (role === 'client') return 'Client';
+  return 'Hybride';
 }
 
 export function PublicProfileScreen() {
@@ -39,25 +48,26 @@ export function PublicProfileScreen() {
   useEffect(() => {
     async function loadProfile() {
       if (!id) return;
-      
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
+
+      const [{ data: profileData, error: profileError }, { data: reviewsData }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', id)
+          .single(),
+        supabase
+          .from('reviews')
+          .select('id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(first_name, last_name, avatar_url)')
+          .eq('reviewee_id', id)
+          .order('created_at', { ascending: false }),
+      ]);
+
       if (!profileError && profileData) {
         setProfile(profileData as ProfileData);
       }
 
-      const { data: reviewsData } = await supabase
-        .from('reviews')
-        .select('*, reviewer:profiles!reviews_reviewer_id_fkey(first_name, last_name, avatar_url)')
-        .eq('reviewee_id', id)
-        .order('created_at', { ascending: false });
-
       if (reviewsData) {
-        setReviews(reviewsData as any[]);
+        setReviews(reviewsData as ReviewData[]);
       }
 
       setLoading(false);
@@ -98,12 +108,16 @@ export function PublicProfileScreen() {
       <div className="px-6 relative z-10 -mt-2">
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-6 relative">
            <div className="absolute -top-12 left-6 w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-slate-200 shadow-sm">
-             <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${profile.id}`} alt="avatar" className="w-full h-full object-cover" />
+             <img
+               src={profile.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${profile.id}`}
+               alt="avatar"
+               className="w-full h-full object-cover"
+             />
            </div>
            
            <div className="flex justify-end mb-2 pt-2">
-             <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-green-100">
-               <Shield className="w-3.5 h-3.5" /> Identité vérifiée
+             <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-blue-100">
+               <BadgeCheck className="w-3.5 h-3.5" /> Profil public
              </div>
            </div>
 
@@ -114,11 +128,37 @@ export function PublicProfileScreen() {
            <div className="flex items-center gap-4 mt-3">
              <div className="flex items-center gap-1 font-bold text-slate-900 border border-slate-200 px-2 py-1 rounded-md shadow-sm">
                <Star className="w-4 h-4 fill-yellow-400 text-yellow-500" />
-               {(profile.rating || 4.8).toFixed(1)} <span className="text-slate-500 font-medium ml-1">({profile.reviews_count || 12} avis)</span>
+               {(profile.rating || 0).toFixed(1)} <span className="text-slate-500 font-medium ml-1">({profile.reviews_count || 0} avis)</span>
              </div>
              <div className="flex items-center gap-1 text-sm text-slate-600 font-medium">
                 <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                {profile.missions_completed || 24} missions
+               {profile.missions_completed || 0} missions
+             </div>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+             <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+               <div className="flex items-center gap-2 text-slate-500">
+                 <Shield className="w-4 h-4" />
+                 <span className="text-xs font-semibold uppercase tracking-wide">Mode</span>
+               </div>
+               <p className="mt-2 text-sm font-semibold text-slate-900">{getRoleLabel(profile.role)}</p>
+             </div>
+             <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+               <div className="flex items-center gap-2 text-slate-500">
+                 <MapPin className="w-4 h-4" />
+                 <span className="text-xs font-semibold uppercase tracking-wide">Zone</span>
+               </div>
+               <p className="mt-2 text-sm font-semibold text-slate-900">{profile.address || 'Non renseignée'}</p>
+             </div>
+             <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+               <div className="flex items-center gap-2 text-slate-500">
+                 <Calendar className="w-4 h-4" />
+                 <span className="text-xs font-semibold uppercase tracking-wide">Disponibilité</span>
+               </div>
+               <p className="mt-2 text-sm font-semibold text-slate-900">
+                 {profile.is_available !== false ? 'Disponible' : 'Indisponible'}
+               </p>
              </div>
            </div>
 
@@ -132,12 +172,19 @@ export function PublicProfileScreen() {
            <div className="mt-6">
              <h3 className="text-sm font-bold text-slate-900 mb-2">Compétences</h3>
              <div className="flex flex-wrap gap-2">
-               {(profile.skills && profile.skills.length > 0 ? profile.skills : ['Bricolage', 'Jardinage']).map((skill, index) => (
+               {(profile.skills && profile.skills.length > 0 ? profile.skills : ['Aucune compétence renseignée']).map((skill, index) => (
                  <span key={index} className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200">
                    {skill}
                  </span>
                ))}
              </div>
+           </div>
+
+           <div className="mt-6 pt-6 border-t border-slate-100">
+             <h3 className="text-sm font-bold text-slate-900 mb-2">Membre depuis</h3>
+             <p className="text-sm text-slate-600">
+               {profile.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR') : 'Non disponible'}
+             </p>
            </div>
         </div>
         
@@ -154,10 +201,15 @@ export function PublicProfileScreen() {
                    <div className="flex justify-between items-start mb-3">
                      <div className="flex items-center gap-3">
                        <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
-                         <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${review.reviewer?.avatar_url || 'reviewer'}`} alt="avatar" />
+                         <img
+                           src={review.reviewer?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${review.reviewer?.first_name || 'reviewer'}`}
+                           alt="avatar"
+                         />
                        </div>
                        <div>
-                         <div className="font-bold text-slate-900 text-sm">{review.reviewer?.first_name || 'Voisin'}</div>
+                         <div className="font-bold text-slate-900 text-sm">
+                           {[review.reviewer?.first_name, review.reviewer?.last_name].filter(Boolean).join(' ') || 'Voisin'}
+                         </div>
                          <div className="text-xs text-slate-500">{new Date(review.created_at).toLocaleDateString()}</div>
                        </div>
                      </div>
