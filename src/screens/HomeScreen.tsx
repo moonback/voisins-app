@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Search, PenTool, Truck, Sprout, Monitor, ShoppingBag, Map, Plus, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getMissionImageUrls, normalizeCategory } from '@/lib/utils';
 import { useMissionStore } from '@/store/useMissionStore';
 import { useAuth } from '@/store/useAuth';
 
@@ -27,13 +28,6 @@ export function HomeScreen() {
   useEffect(() => {
     fetchMissions();
   }, []);
-
-  const normalizeCategory = (value?: string) =>
-    (value || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
 
   const filteredMissions = useMemo(() => {
     if (!selectedCategory) return missions;
@@ -156,7 +150,7 @@ export function HomeScreen() {
           </h2>
           <button
             type="button"
-            onClick={() => setSelectedCategory(null)}
+            onClick={() => navigate(selectedCategory ? `/search?category=${selectedCategory}` : '/search')}
             className="text-sm font-bold text-blue-600 active:opacity-70"
           >
             Voir tout
@@ -188,10 +182,7 @@ export function HomeScreen() {
              </div>
            ) : (
              filteredMissions.map((mission) => {
-               const missionImages = [
-                 ...((mission as { images?: string[] }).images || []),
-                 ...(mission.photos || []),
-               ].filter(Boolean);
+               const missionImages = getMissionImageUrls(mission);
 
                return (
                <div key={mission.id} onClick={() => navigate(`/mission/${mission.id}`)} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-4 cursor-pointer hover:shadow-md transition-shadow">

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { useEffect } from 'react';
+import { getMissionImageUrls } from '@/lib/utils';
 import { useMissionStore } from '@/store/useMissionStore';
 
 // Create custom icons using divIcon
@@ -93,8 +94,16 @@ export function NearbyMapScreen() {
 
       <div className="absolute bottom-24 w-full z-10 pointer-events-none">
         <div className="flex overflow-x-auto gap-4 px-6 pb-4 snap-x snap-mandatory hide-scroll pointer-events-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-           {missions.map((mission) => (
+           {missions.map((mission) => {
+             const missionImages = getMissionImageUrls(mission);
+
+             return (
              <div key={mission.id} onClick={() => navigate(`/mission/${mission.id}`)} className="bg-white rounded-2xl p-5 shadow-lg border border-slate-200 min-w-[280px] w-[85%] shrink-0 snap-center flex flex-col gap-3 cursor-pointer hover:shadow-md transition-shadow">
+                 {missionImages.length > 0 && (
+                   <div className="w-full h-28 overflow-hidden rounded-xl bg-slate-100">
+                     <img src={missionImages[0]} alt={mission.title} className="w-full h-full object-cover" />
+                   </div>
+                 )}
                  <div className="flex justify-between items-start">
                     <h3 className="font-bold text-slate-900 text-base line-clamp-1">{mission.title}</h3>
                     <span className="font-bold text-slate-900">{mission.budget}€</span>
@@ -107,7 +116,7 @@ export function NearbyMapScreen() {
                     <span>À proximité</span>
                  </div>
              </div>
-           ))}
+           )})}
         </div>
       </div>
     </motion.div>

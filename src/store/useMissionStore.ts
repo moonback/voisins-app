@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 
+const MISSION_IMAGES_BUCKET = 'mission-images';
+
 export interface Mission {
   id: string;
   title: string;
@@ -11,12 +13,28 @@ export interface Mission {
   client_id: string;
   provider_id?: string;
   location?: string;
+  address?: string;
   latitude?: number;
   longitude?: number;
+  images?: string[];
   photos?: string[];
   date?: string;
+  mission_date?: string;
   duration?: string;
   created_at: string;
+}
+
+export interface CreateMissionInput {
+  title: string;
+  category: string;
+  description: string;
+  budget: number;
+  location: string;
+  date: string;
+  duration: string;
+  latitude?: number;
+  longitude?: number;
+  imageFiles?: File[];
 }
 
 interface MissionState {
@@ -24,7 +42,7 @@ interface MissionState {
   loading: boolean;
   error: string | null;
   fetchMissions: () => Promise<void>;
-  createMission: (mission: Omit<Mission, 'id' | 'created_at' | 'status' | 'client_id' | 'provider_id'>) => Promise<boolean>;
+  createMission: (mission: CreateMissionInput) => Promise<boolean>;
 }
 
 export const useMissionStore = create<MissionState>((set, get) => ({
@@ -63,11 +81,34 @@ export const useMissionStore = create<MissionState>((set, get) => ({
          }]);
       }
 
+      const imageUrls: string[] = [];
+      for (const file of missionArgs.imageFiles || []) {
+        const extension = file.name.split('.').pop() || 'jpg';
+        const filePath = `${auth.data.user.id}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(MISSION_IMAGES_BUCKET)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from(MISSION_IMAGES_BUCKET)
+          .getPublicUrl(filePath);
+
+        imageUrls.push(publicUrlData.publicUrl);
+      }
+
+      const { imageFiles, ...missionData } = missionArgs;
       const { error } = await supabase.from('missions').insert([
         {
-          ...missionArgs,
+          ...missionData,
           client_id: auth.data.user.id,
-          status: 'open'
+          status: 'open',
+          photos: imageUrls
         }
       ]);
 

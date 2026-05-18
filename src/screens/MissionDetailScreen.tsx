@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useMissionStore, type Mission } from '@/store/useMissionStore';
 import { useAuth } from '@/store/useAuth';
 import { supabase } from '@/lib/supabase';
+import { getMissionImageUrls } from '@/lib/utils';
 import { useChatStore } from '@/store/useChatStore';
 
 export function MissionDetailScreen() {
@@ -113,6 +114,7 @@ export function MissionDetailScreen() {
   }
 
   const isOwner = user?.id === mission.client_id;
+  const missionImages = getMissionImageUrls(mission);
   
   return (
     <motion.div 
@@ -122,10 +124,13 @@ export function MissionDetailScreen() {
       className="flex flex-col h-full bg-slate-50 relative"
     >
       <div className="absolute top-0 left-0 w-full h-64 bg-slate-200 z-0 overflow-hidden">
-        {/* Placeholder for map or image */}
-        <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-50 flex items-center justify-center opacity-60">
-           <MapPin className="w-16 h-16 text-blue-200" />
-        </div>
+        {missionImages.length > 0 ? (
+          <img src={missionImages[0]} alt={mission.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-50 flex items-center justify-center opacity-60">
+             <MapPin className="w-16 h-16 text-blue-200" />
+          </div>
+        )}
       </div>
 
       <div className="px-6 pt-12 pb-4 flex justify-between items-center z-10 relative">
@@ -169,7 +174,7 @@ export function MissionDetailScreen() {
                  <div>
                     <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Lieu</div>
                     <div className="text-xs font-bold text-slate-700">
-                      {(user && user.user_metadata?.role !== 'pending') || isOwner ? (mission.location || 'Lieu non spécifié') : '📍 Visible par profils vérifiés max'}
+                      {(user && user.user_metadata?.role !== 'pending') || isOwner ? (mission.address || mission.location || 'Lieu non spécifié') : '📍 Visible par profils vérifiés max'}
                     </div>
                  </div>
               </div>

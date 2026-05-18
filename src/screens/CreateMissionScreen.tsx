@@ -4,14 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createMissionSchema, type CreateMissionFormValues } from '@/lib/validations';
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMissionStore } from '@/store/useMissionStore';
+
+interface SelectedPhoto {
+  file: File;
+  previewUrl: string;
+}
 
 export function CreateMissionScreen() {
   const navigate = useNavigate();
   const [success, setSuccess] = useState(false);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photosRef = useRef<SelectedPhoto[]>([]);
   const { createMission, error: storeError } = useMissionStore();
 
   const {
@@ -22,30 +28,44 @@ export function CreateMissionScreen() {
     resolver: zodResolver(createMissionSchema),
   });
 
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
+
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
+    };
+  }, []);
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            setPhotos(prev => [...prev, reader.result as string]);
-          }
-        };
-        reader.readAsDataURL(file);
-      }
+      const nextPhotos: SelectedPhoto[] = Array.from(files).map((file: File) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      }));
+      setPhotos((prev) => [...prev, ...nextPhotos]);
     }
+
+    e.target.value = '';
   };
 
   const removePhoto = (index: number) => {
-    setPhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotos((prev) => {
+      const removed = prev[index];
+      if (removed) {
+        URL.revokeObjectURL(removed.previewUrl);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
-  const onSubmit = async (data: any) => {
-    // Inject photos in data if schema handles it, or just ignore for now as backend might not support it yet
-    const dataWithPhotos = { ...data, photos }; // Note: Ensure backend allows this field!
-    const success = await createMission(data);
+  const onSubmit = async (data: CreateMissionFormValues) => {
+    const success = await createMission({
+      ...data,
+      imageFiles: photos.map((photo) => photo.file),
+    });
     
     if (success) {
        setSuccess(true);
@@ -187,7 +207,7 @@ export function CreateMissionScreen() {
                  <div className="flex gap-2 overflow-x-auto pb-3 mb-2">
                    {photos.map((photo, index) => (
                      <div key={index} className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden border border-slate-200">
-                        <img src={photo} alt="Preview" className="w-full h-full object-cover" />
+                        <img src={photo.previewUrl} alt="Preview" className="w-full h-full object-cover" />
                         <button 
                           type="button"
                           onClick={() => removePhoto(index)}
