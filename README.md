@@ -2,58 +2,184 @@
 
 **Voisin.** est une application mobile-first (Web/PWA) de mise en relation entre voisins pour des petits services du quotidien (bricolage, jardinage, dépannage informatique, etc.). Conçue pour offrir une expérience "Premium" et fluide inspirée des standards actuels (Uber, Airbnb).
 
-## 🚀 Fonctionnalités Principales
+##  Fonctionnalités Principales
 
-- **Authentification & Profils** : Inscription, connexion, profils détaillés avec avis et compétences.
-- **Missions** : Création de missions (détails, photos, budget), navigation et recherche par liste et carte.
-- **Géolocalisation** : Carte interactive affichant les missions à proximité (React Native Maps / Leaflet).
-- **Messagerie Temps Réel** : Chat entre voisins pour coordonner les missions.
-- **Paiement Sécurisé** : (À venir via Stripe Connect) Système d'escrow et libération des fonds.
+### Authentification & Profils
+- Inscription et connexion via Supabase Auth (email/password)
+- Profils utilisateurs détaillés avec avatar, bio, compétences et note moyenne
+- Système de rôles (client, prestataire, ou les deux)
+- Profils publics consultables par tous les utilisateurs
 
-## 🛠 Stack Technique
+### Système de Missions
+- Création de missions avec titre, description, catégorie, budget et date
+- Upload d'images pour les missions
+- Statuts de mission : draft, open, assigned, completed, cancelled
+- Candidatures (mission_offers) avec prix proposé et message
+- Affectation d'un prestataire à une mission
+
+### Géolocalisation & Carte
+- Carte interactive Leaflet affichant les missions à proximité
+- Géolocalisation utilisateur (latitude/longitude)
+- Filtrage des missions par distance
+
+### Messagerie Temps Réel
+- Chat en temps réel via Supabase Realtime
+- Conversations liées aux missions
+- Indicateur de message "vu"
+- Liste des conversations actives
+
+### Système d'Avis & Notations
+- Étoiles (1-5) et commentaires après mission terminée
+- Moyenne des notes et compteur d'avis sur les profils
+- Compteur de missions complétées
+
+### Panel Administrateur
+- Dashboard avec KPIs (utilisateurs, missions, revenus 10%)
+- Modération des missions (suppression)
+- Vue d'ensemble de l'activité de la plateforme
+
+##  Stack Technique
 
 - **Frontend** : React 19, TypeScript, Vite
 - **Styling** : Tailwind CSS v4, Framer Motion (Animations), Lucide React (Icônes)
-- **State Management** : Zustand (Global state), TanStack Query (Data fetching)
-- **Backend & Database** : Supabase (PostgreSQL, Auth, Storage, Edge Functions, Realtime)
+- **State Management** : Zustand (Global state)
+- **Data Fetching** : TanStack Query v5
+- **Forms** : React Hook Form + Zod validation
+- **Backend & Database** : Supabase (PostgreSQL, Auth, Storage, Realtime)
+- **Maps** : Leaflet + React Leaflet
+- **AI** : Google GenAI (intégré pour futures fonctionnalités IA)
 - **UI/UX** : Design minimaliste "Clean Utility" (Glassmorphism, animations fluides)
+- **PWA** : Vite PWA Plugin (configuré)
 
-## 📁 Architecture du Projet
+##  Architecture du Projet
 
-```text
-/
+```
+voisins-app/
 ├── src/
-│   ├── components/      # Composants UI partagés et Layout (MobileContainer, Tabs)
-│   ├── lib/             # Configurations et utilitaires externes (Supabase, utils)
-│   ├── screens/         # Écrans de l'application mobile (Home, Search, Profile, etc.)
-│   ├── store/           # Stores globaux Zustand (useAuth)
-│   ├── App.tsx          # Point d'entrée de l'application et pur routing
-│   ├── index.css        # Styles globaux (Tailwind)
-│   └── main.tsx         # Entrée React
+│   ├── components/
+│   │   └── layout/
+│   │       ├── BottomTabs.tsx       # Navigation tabs (Home, Search, Inbox, Profile)
+│   │       └── MobileContainer.tsx  # Container mobile-first avec Safe Area
+│   ├── lib/
+│   │   ├── supabase.ts              # Client Supabase
+│   │   ├── utils.ts                 # Utilitaires (cn, formatage)
+│   │   └── validations.ts           # Schémas Zod
+│   ├── screens/
+│   │   ├── HomeScreen.tsx           # Écran principal (liste missions, catégories)
+│   │   ├── SearchScreen.tsx         # Recherche de missions
+│   │   ├── InboxScreen.tsx          # Liste des conversations
+│   │   ├── ChatScreen.tsx           # Salon de chat temps réel
+│   │   ├── ProfileScreen.tsx        # Profil utilisateur connecté
+│   │   ├── PublicProfileScreen.tsx  # Profil public d'un autre utilisateur
+│   │   ├── CreateMissionScreen.tsx  # Formulaire création mission
+│   │   ├── MissionDetailScreen.tsx  # Détails mission + offres + reviews
+│   │   ├── NearbyMapScreen.tsx      # Carte Leaflet des missions
+│   │   ├── OnboardingScreen.tsx     # Écran d'accueil non-connecté
+│   │   ├── LoginScreen.tsx          # Connexion
+│   │   ├── RegisterScreen.tsx        # Inscription
+│   │   └── AdminDashboardScreen.tsx # Dashboard admin
+│   ├── store/
+│   │   ├── useAuth.ts               # Store auth (user, session)
+│   │   ├── useMissionStore.ts       # Store missions (CRUD)
+│   │   ├── useChatStore.ts          # Store chat (messages, conversations)
+│   │   └── useNotificationStore.ts  # Store notifications
+│   ├── App.tsx                      # Routing et layout principal
+│   ├── index.css                    # Styles globaux (Tailwind v4)
+│   └── main.tsx                     # Point d'entrée
 ├── supabase/
-│   └── schema.sql       # Structure complète de la BDD PostgreSQL avec RLS policies
-├── README.md
-└── ROADMAP.md
+│   ├── schema.sql                   # Schéma BDD complet + RLS
+│   └── fix-1.sql                    # Corrections/migrations
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+└── README.md
 ```
 
-## ⚙️ Configuration & Installation
+##  Modèle de Données (Schema BDD)
 
-1. **Pré-requis :** Node.js >= 18
-2. **Variables d'environnement :**
-   Créez un fichier `.env` basé sur `.env.example` en renseignant les clés Supabase de votre projet.
+### Tables Principales
+
+| Table | Description |
+|-------|-------------|
+| `profiles` | Profils utilisateurs (nom, avatar, bio, skills, note, géolocalisation) |
+| `missions` | Annonces de services (titre, desc, catégorie, budget, statut, localisation) |
+| `mission_offers` | Candidatures des prestataires (prix proposé, message, statut) |
+| `conversations` | Conversations entre utilisateurs |
+| `messages` | Messages temps réel |
+| `reviews` | Avis et notes |
+| `notifications` | Notifications push/email |
+
+### Sécurité (RLS)
+
+Toutes les tables ont le Row Level Security activé avec des politiques :
+- Profils : lecture publique, modification par soi-même
+- Missions : lecture publique des missions ouvertes, modification par participants
+- Messages : lecture/écriture uniquement par les participants de la conversation
+
+##  Configuration & Installation
+
+1. **Pré-requis** : Node.js >= 18
+2. **Variables d'environnement** :
+   Créez un fichier `.env` basé sur `.env.example` :
    ```env
    VITE_SUPABASE_URL="votre_url_supabase"
    VITE_SUPABASE_ANON_KEY="votre_cle_anonyme"
    ```
-3. **Installation :**
+3. **Installation** :
    ```bash
    npm install
    ```
-4. **Lancement en développement :**
+4. **Lancement** :
    ```bash
    npm run dev
    ```
+5. **Build production** :
+   ```bash
+   npm run build
+   ```
 
-## 🔒 Base de Données & RLS
+##  Scripts Disponibles
 
-Le fichier `supabase/schema.sql` contient les tables pour les profils, les missions, les messages, etc. Il configure également les règles de sécurité au niveau des lignes (RLS) pour garantir que seules les personnes autorisées puissent lire ou écrire des données.
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Lancement serveur développement (port 3000) |
+| `npm run build` | Build production |
+| `npm run preview` | Prévisualisation build |
+| `npm run lint` | Vérification TypeScript |
+| `npm run clean` | Nettoyage dossier dist |
+
+##  Écrans de l'Application
+
+1. **Onboarding** - Écran d'accueil avec CTA inscription/connexion
+2. **Login/Register** - Formulaires d'authentification
+3. **Home** - Liste des missions ouvertes, catégories, pull-to-refresh
+4. **Search** - Recherche avec filtres par catégorie
+5. **Mission Detail** - Détails, candidature, chat avec client
+6. **Create Mission** - Formulaire création de mission
+7. **Nearby Map** - Carte Leaflet des missions
+8. **Inbox** - Liste des conversations
+9. **Chat** - Messages temps réel
+10. **Profile** - Profil utilisateur connecté (édition)
+11. **Public Profile** - Profil d'un autre utilisateur + reviews
+12. **Admin Dashboard** - KPIs et modération
+
+##  Fonctionnalités Premium Implémentées
+
+- Animations fluides avec Framer Motion (transitions, variants)
+- Pull-to-refresh sur les listes
+- Skeleton loading states
+- Optimistic UI updates
+- Dark mode ready (structure CSS disponible)
+- PWA ready avec service worker
+- Design glassmorphism subtil
+- Micro-interactions (scale, opacity)
+- Safe areas pour mobile
+
+##  Prochaines Étapes (Voir Roadmap)
+
+- Intégration Stripe Connect réelle
+- Notifications push PWA
+- Matching IA avec Google GenAI
+- Application React Native
+- Système de vérification utilisateur
+- Résolution de litiges
