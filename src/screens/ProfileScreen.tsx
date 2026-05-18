@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Settings, LogOut, ChevronRight, Star, Shield, CreditCard, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Star, Shield, CreditCard, LayoutDashboard, ShieldCheck, BriefcaseBusiness } from 'lucide-react';
 import { useAuth } from '@/store/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
@@ -26,6 +26,7 @@ export function ProfileScreen() {
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Mon profil public', value: '', action: () => navigate(`/user/${user?.id}`) },
+    { icon: BriefcaseBusiness, label: 'Mes missions postees', value: '', action: () => navigate('/profile/missions') },
     { icon: Star, label: 'Mes avis', value: profile ? `${profile.rating?.toFixed(1)}/5` : 'N/A', action: () => {} },
     { icon: CreditCard, label: 'Paiements & Stripe', value: '', action: () => {} },
     { icon: Shield, label: 'Confiance & Sécurité', value: '', action: () => {} },

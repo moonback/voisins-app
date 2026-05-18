@@ -17,6 +17,7 @@ import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
 import { ChatScreen } from '@/screens/ChatScreen';
 import { PublicProfileScreen } from '@/screens/PublicProfileScreen';
 import { SettingsScreen } from '@/screens/SettingsScreen';
+import { MyPostedMissionsScreen } from '@/screens/MyPostedMissionsScreen';
 
 import { AdminDashboardScreen } from '@/screens/AdminDashboardScreen';
 
@@ -64,6 +65,7 @@ function AppLayout() {
         <Route path="/inbox" element={<InboxScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/profile/settings" element={<SettingsScreen />} />
+        <Route path="/profile/missions" element={<MyPostedMissionsScreen />} />
         
         {/* Detail Screens */}
         <Route path="/map" element={<NearbyMapScreen />} />
