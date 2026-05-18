@@ -30,7 +30,7 @@ export function ProfileScreen() {
     { icon: CreditCard, label: 'Paiements & Stripe', value: '', action: () => {} },
     { icon: Shield, label: 'Confiance & Sécurité', value: '', action: () => {} },
     { icon: ShieldCheck, label: 'Administration', value: 'Admin', action: () => navigate('/admin') },
-    { icon: Settings, label: 'Paramètres', value: '', action: () => {} },
+    { icon: Settings, label: 'Paramètres', value: '', action: () => navigate('/profile/settings') },
   ];
 
   return (
