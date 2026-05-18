@@ -18,6 +18,16 @@
   html, body, #root {
     @apply h-full w-full m-0 p-0 overflow-hidden bg-gray-50 text-gray-900 antialiased font-sans;
   }
+
+  body {
+    background:
+      radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 30%),
+      linear-gradient(180deg, #f8fbff 0%, #eef2ff 45%, #e2e8f0 100%);
+  }
+
+  ::selection {
+    background: rgba(37, 99, 235, 0.18);
+  }
 }
 
 /* Hide scrollbar for a more app-like feel */
@@ -28,4 +38,21 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
   -webkit-tap-highlight-color: transparent;
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.hide-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scroll::-webkit-scrollbar {
+  display: none;
 }
