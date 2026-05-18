@@ -8,6 +8,10 @@ import { supabase } from '@/lib/supabase';
 import { getMissionImageUrls } from '@/lib/utils';
 import { useChatStore } from '@/store/useChatStore';
 
+function getProfileName(profile?: Mission['client'] | Mission['provider'] | null) {
+  return `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Voisin';
+}
+
 export function MissionDetailScreen() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -30,7 +34,15 @@ export function MissionDetailScreen() {
     async function loadMission() {
       if (!id) return;
       
-      const { data, error } = await supabase.from('missions').select('*').eq('id', id).single();
+      const { data, error } = await supabase
+        .from('missions')
+        .select(`
+          *,
+          client:profiles!missions_client_id_fkey(id, first_name, last_name, avatar_url, rating, reviews_count),
+          provider:profiles!missions_provider_id_fkey(id, first_name, last_name, avatar_url, rating, reviews_count)
+        `)
+        .eq('id', id)
+        .single();
       if (!error && data) {
         setMission(data as Mission);
         
@@ -154,11 +166,17 @@ export function MissionDetailScreen() {
 
         <div className="flex items-center gap-3 pb-6 mb-6 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors rounded-xl p-2 -ml-2" onClick={() => navigate(`/user/${mission.client_id}`)}>
            <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shadow-inner">
-              <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${mission.client_id}`} alt="avatar" className="w-full h-full object-cover" />
+              <img
+                src={mission.client?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${mission.client_id}`}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
            </div>
            <div>
-              <div className="font-bold text-slate-900 text-sm">Posté par un Voisin</div>
-              <div className="text-xs text-slate-500 font-medium">Voir le profil</div>
+              <div className="font-bold text-slate-900 text-sm">{getProfileName(mission.client)}</div>
+              <div className="text-xs text-slate-500 font-medium">
+                {(mission.client?.rating || 0).toFixed(1)} / 5 · {mission.client?.reviews_count || 0} avis
+              </div>
            </div>
         </div>
 
@@ -193,6 +211,30 @@ export function MissionDetailScreen() {
                  </div>
               </div>
            </div>
+
+           {mission.provider && (
+             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+               <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Voisin selectionne</div>
+               <div
+                 className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
+                 onClick={() => navigate(`/user/${mission.provider_id}`)}
+               >
+                 <div className="h-12 w-12 overflow-hidden rounded-full bg-slate-200">
+                   <img
+                     src={mission.provider.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${mission.provider_id}`}
+                     alt="avatar"
+                     className="h-full w-full object-cover"
+                   />
+                 </div>
+                 <div className="min-w-0 flex-1">
+                   <p className="text-sm font-bold text-slate-900">{getProfileName(mission.provider)}</p>
+                   <p className="mt-1 text-xs text-slate-500">
+                     {(mission.provider.rating || 0).toFixed(1)} / 5 · {mission.provider.reviews_count || 0} avis
+                   </p>
+                 </div>
+               </div>
+             </div>
+           )}
            
            {isOwner && mission.status === 'assigned' && (
              <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mt-6 text-center">

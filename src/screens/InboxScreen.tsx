@@ -27,7 +27,7 @@ export function InboxScreen() {
     >
       <div className="px-6 pt-12 pb-4 border-b border-slate-200 z-10 sticky top-0 bg-white flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Messages</h1>
-        <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center relative hover:bg-slate-200 transition-colors">
+        <button onClick={() => navigate('/notifications')} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center relative hover:bg-slate-200 transition-colors">
           <Bell className="w-5 h-5 text-slate-700" />
           {unreadCount > 0 && (
             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-blue-600 rounded-full border border-white"></span>

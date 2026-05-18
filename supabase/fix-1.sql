@@ -46,6 +46,179 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1
     FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'mission_offers'
+      AND policyname = 'Mission participants can read offers'
+  ) THEN
+    CREATE POLICY "Mission participants can read offers"
+    ON public.mission_offers FOR SELECT
+    USING (
+      auth.uid() = provider_id
+      OR EXISTS (
+        SELECT 1
+        FROM public.missions m
+        WHERE m.id = mission_id
+          AND m.client_id = auth.uid()
+      )
+    );
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'mission_offers'
+      AND policyname = 'Providers can create offers on open missions'
+  ) THEN
+    CREATE POLICY "Providers can create offers on open missions"
+    ON public.mission_offers FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      auth.uid() = provider_id
+      AND EXISTS (
+        SELECT 1
+        FROM public.missions m
+        WHERE m.id = mission_id
+          AND m.status = 'open'
+          AND m.client_id <> provider_id
+      )
+    );
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'mission_offers'
+      AND policyname = 'Mission owners can update offers'
+  ) THEN
+    CREATE POLICY "Mission owners can update offers"
+    ON public.mission_offers FOR UPDATE
+    TO authenticated
+    USING (
+      auth.uid() = provider_id
+      OR EXISTS (
+        SELECT 1
+        FROM public.missions m
+        WHERE m.id = mission_id
+          AND m.client_id = auth.uid()
+      )
+    )
+    WITH CHECK (
+      auth.uid() = provider_id
+      OR EXISTS (
+        SELECT 1
+        FROM public.missions m
+        WHERE m.id = mission_id
+          AND m.client_id = auth.uid()
+      )
+    );
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'conversations'
+      AND policyname = 'Conversation participants can read conversations'
+  ) THEN
+    CREATE POLICY "Conversation participants can read conversations"
+    ON public.conversations FOR SELECT
+    USING (auth.uid() = participant1_id OR auth.uid() = participant2_id);
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'conversations'
+      AND policyname = 'Valid mission participants can create conversations'
+  ) THEN
+    CREATE POLICY "Valid mission participants can create conversations"
+    ON public.conversations FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      (auth.uid() = participant1_id OR auth.uid() = participant2_id)
+      AND participant1_id <> participant2_id
+      AND EXISTS (
+        SELECT 1
+        FROM public.missions m
+        WHERE m.id = mission_id
+          AND (
+            (m.client_id = participant1_id AND (
+              m.provider_id = participant2_id
+              OR EXISTS (
+                SELECT 1
+                FROM public.mission_offers mo
+                WHERE mo.mission_id = m.id
+                  AND mo.provider_id = participant2_id
+              )
+            ))
+            OR
+            (m.client_id = participant2_id AND (
+              m.provider_id = participant1_id
+              OR EXISTS (
+                SELECT 1
+                FROM public.mission_offers mo
+                WHERE mo.mission_id = m.id
+                  AND mo.provider_id = participant1_id
+              )
+            ))
+          )
+      )
+    );
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'notifications'
+      AND policyname = 'Users can read own notifications'
+  ) THEN
+    CREATE POLICY "Users can read own notifications"
+    ON public.notifications FOR SELECT
+    USING (auth.uid() = user_id);
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'notifications'
+      AND policyname = 'Users can update own notifications'
+  ) THEN
+    CREATE POLICY "Users can update own notifications"
+    ON public.notifications FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
     WHERE schemaname = 'storage'
       AND tablename = 'objects'
       AND policyname = 'Authenticated users can upload mission images'

@@ -19,6 +19,7 @@ interface NotificationState {
   loading: boolean;
   fetchNotifications: () => Promise<void>;
   markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
   subscribeToNotifications: () => () => void;
 }
 
@@ -65,6 +66,28 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       set((state) => ({
         notifications: state.notifications.map(n => n.id === id ? { ...n, is_read: true } : n),
         unreadCount: Math.max(0, state.unreadCount - 1)
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  markAllAsRead: async () => {
+    try {
+      const userId = useAuth.getState().user?.id;
+      if (!userId) return;
+
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
+
+      if (error) throw error;
+
+      set((state) => ({
+        notifications: state.notifications.map((notification) => ({ ...notification, is_read: true })),
+        unreadCount: 0,
       }));
     } catch (err) {
       console.error(err);

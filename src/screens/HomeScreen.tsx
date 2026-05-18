@@ -212,12 +212,21 @@ export function HomeScreen() {
                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                     <div className="flex items-center gap-2">
                        <div className="w-6 h-6 rounded-full bg-slate-200 overflow-hidden">
-                          <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${mission.client_id}`} alt="avatar" className="w-full h-full object-cover" />
+                          <img
+                            src={mission.client?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${mission.client_id}`}
+                            alt="avatar"
+                            className="w-full h-full object-cover"
+                          />
                        </div>
-                       <span className="text-xs text-slate-600 font-medium capitalize flex items-center gap-1">
-                          <Map className="w-3 h-3 text-slate-400" />
-                          {(mission as { address?: string }).address || mission.location || 'Non specifie'}
-                       </span>
+                       <div className="min-w-0">
+                         <p className="text-xs font-semibold text-slate-700 truncate">
+                           {`${mission.client?.first_name || ''} ${mission.client?.last_name || ''}`.trim() || 'Voisin'}
+                         </p>
+                         <span className="text-xs text-slate-600 font-medium capitalize flex items-center gap-1">
+                           <Map className="w-3 h-3 text-slate-400" />
+                           {(mission as { address?: string }).address || mission.location || 'Non specifie'}
+                         </span>
+                       </div>
                     </div>
                     <button className="text-blue-600 text-xs font-bold">Voir les détails</button>
                  </div>

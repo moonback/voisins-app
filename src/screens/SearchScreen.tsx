@@ -158,6 +158,9 @@ export function SearchScreen() {
                     <div>
                       <h4 className="font-bold text-slate-900 text-lg">{mission.title}</h4>
                       <p className="text-sm text-slate-500 mt-1 line-clamp-2">{mission.description}</p>
+                      <p className="mt-2 text-xs font-semibold text-slate-700">
+                        {`${mission.client?.first_name || ''} ${mission.client?.last_name || ''}`.trim() || 'Voisin'}
+                      </p>
                     </div>
                     <span className="text-lg font-bold text-slate-900">{mission.budget}€</span>
                   </div>

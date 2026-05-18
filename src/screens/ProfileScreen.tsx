@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
-import { Settings, LogOut, ChevronRight, Star, Shield, CreditCard, LayoutDashboard, ShieldCheck, BriefcaseBusiness, MapPin, BadgeCheck, CalendarDays } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, Star, Bell, LayoutDashboard, ShieldCheck, BriefcaseBusiness, MapPin, BadgeCheck, CalendarDays } from 'lucide-react';
 import { useAuth } from '@/store/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNotificationStore } from '@/store/useNotificationStore';
 
 type ProfileData = {
   id: string;
@@ -31,6 +32,7 @@ export function ProfileScreen() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const { unreadCount, fetchNotifications } = useNotificationStore();
   
   useEffect(() => {
     async function loadProfile() {
@@ -39,7 +41,8 @@ export function ProfileScreen() {
       if (data) setProfile(data as ProfileData);
     }
     loadProfile();
-  }, [user]);
+    fetchNotifications();
+  }, [fetchNotifications, user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -49,9 +52,8 @@ export function ProfileScreen() {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Mon profil public', value: '', action: () => navigate(`/user/${user?.id}`) },
     { icon: BriefcaseBusiness, label: 'Mes missions postees', value: '', action: () => navigate('/profile/missions') },
-    { icon: Star, label: 'Mes avis', value: profile ? `${(profile.rating || 0).toFixed(1)}/5` : 'N/A', action: () => {} },
-    { icon: CreditCard, label: 'Paiements & Stripe', value: '', action: () => {} },
-    { icon: Shield, label: 'Confiance & Sécurité', value: '', action: () => {} },
+    { icon: Star, label: 'Mes avis', value: profile ? `${(profile.rating || 0).toFixed(1)}/5` : 'N/A', action: () => navigate('/profile/reviews') },
+    { icon: Bell, label: 'Notifications', value: unreadCount > 0 ? `${unreadCount} non lue(s)` : 'A jour', action: () => navigate('/notifications') },
     { icon: ShieldCheck, label: 'Administration', value: 'Admin', action: () => navigate('/admin') },
     { icon: Settings, label: 'Paramètres', value: '', action: () => navigate('/profile/settings') },
   ];

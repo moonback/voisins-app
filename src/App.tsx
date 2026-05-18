@@ -18,6 +18,8 @@ import { ChatScreen } from '@/screens/ChatScreen';
 import { PublicProfileScreen } from '@/screens/PublicProfileScreen';
 import { SettingsScreen } from '@/screens/SettingsScreen';
 import { MyPostedMissionsScreen } from '@/screens/MyPostedMissionsScreen';
+import { MyReviewsScreen } from '@/screens/MyReviewsScreen';
+import { NotificationsScreen } from '@/screens/NotificationsScreen';
 
 import { AdminDashboardScreen } from '@/screens/AdminDashboardScreen';
 
@@ -66,6 +68,8 @@ function AppLayout() {
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/profile/settings" element={<SettingsScreen />} />
         <Route path="/profile/missions" element={<MyPostedMissionsScreen />} />
+        <Route path="/profile/reviews" element={<MyReviewsScreen />} />
+        <Route path="/notifications" element={<NotificationsScreen />} />
         
         {/* Detail Screens */}
         <Route path="/map" element={<NearbyMapScreen />} />

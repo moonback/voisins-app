@@ -3,6 +3,15 @@ import { supabase } from '@/lib/supabase';
 
 const MISSION_IMAGES_BUCKET = 'mission-images';
 
+export interface MissionProfile {
+  id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  avatar_url?: string | null;
+  rating?: number | null;
+  reviews_count?: number | null;
+}
+
 export interface Mission {
   id: string;
   title: string;
@@ -22,6 +31,8 @@ export interface Mission {
   mission_date?: string;
   duration?: string;
   created_at: string;
+  client?: MissionProfile | null;
+  provider?: MissionProfile | null;
 }
 
 export interface CreateMissionInput {
@@ -54,7 +65,11 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('missions')
-        .select('*')
+        .select(`
+          *,
+          client:profiles!missions_client_id_fkey(id, first_name, last_name, avatar_url, rating, reviews_count),
+          provider:profiles!missions_provider_id_fkey(id, first_name, last_name, avatar_url, rating, reviews_count)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
