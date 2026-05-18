@@ -1,0 +1,10 @@
+{
+  "name": "Voisins App",
+  "description": "Marketplace mobile de mise en relation entre voisins pour petits services.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
