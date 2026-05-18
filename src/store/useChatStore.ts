@@ -141,8 +141,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   subscribeToMessages: (conversationId: string) => {
+    const channelName = `chat_${conversationId}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel(`chat_${conversationId}`)
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

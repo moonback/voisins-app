@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/store/useAuth';
 
 export interface Notification {
   id: string;
@@ -71,31 +72,29 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   subscribeToNotifications: () => {
-    supabase.auth.getUser().then(({ data }) => {
-      const userId = data.user?.id;
-      if (!userId) return;
+    const userId = useAuth.getState().user?.id;
+    if (!userId) return () => {};
 
-      const channel = supabase
-        .channel('public:notifications')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
-        }, (payload) => {
-          const newNotif = payload.new as Notification;
-          set((state) => ({
-            notifications: [newNotif, ...state.notifications],
-            unreadCount: state.unreadCount + 1
-          }));
-        })
-        .subscribe();
-      
-      // Cleanup happens if we export channel stop, but for a global store we usually keep it alive.
-    });
+    const channelName = `notifications-${userId}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    const channel = supabase.channel(channelName);
+
+    channel
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${userId}`
+      }, (payload) => {
+        const newNotif = payload.new as Notification;
+        set((state) => ({
+          notifications: [newNotif, ...state.notifications],
+          unreadCount: state.unreadCount + 1
+        }));
+      })
+      .subscribe();
 
     return () => {
-       // Cleanup logic if needed
+      supabase.removeChannel(channel);
     };
   }
 }));
