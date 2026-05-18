@@ -56,20 +56,21 @@ export function NotificationsScreen() {
     <motion.div
       initial={{ opacity: 0, x: 10 }}
       animate={{ opacity: 1, x: 0 }}
-      className="flex h-full flex-col overflow-y-auto bg-slate-50 pb-8"
+      className="flex h-full flex-col overflow-y-auto bg-[linear-gradient(180deg,_#f8fbff_0%,_#f8fafc_32%,_#f8fafc_100%)] pb-8"
     >
-      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-6 pb-5 pt-12">
+      <div className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/88 px-6 pb-5 pt-12 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-700 transition-colors hover:bg-slate-100"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Notifications</h1>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Centre d'activite</p>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Notifications</h1>
               <p className="mt-1 text-sm text-slate-500">Retrouvez vos alertes liees aux missions et messages.</p>
             </div>
           </div>
@@ -88,15 +89,15 @@ export function NotificationsScreen() {
 
       <div className="space-y-6 px-4 py-6">
         <section className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Total</p>
             <p className="mt-2 text-2xl font-bold text-slate-900">{notifications.length}</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Non lues</p>
             <p className="mt-2 text-2xl font-bold text-slate-900">{unreadCount}</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Lues</p>
             <p className="mt-2 text-2xl font-bold text-slate-900">{Math.max(0, notifications.length - unreadCount)}</p>
           </div>
@@ -105,7 +106,7 @@ export function NotificationsScreen() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(4)].map((_, index) => (
-              <div key={index} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm animate-pulse">
+              <div key={index} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm animate-pulse">
                 <div className="h-4 w-1/3 rounded bg-slate-200" />
                 <div className="mt-3 h-5 w-2/3 rounded bg-slate-200" />
                 <div className="mt-2 h-4 w-full rounded bg-slate-200" />
@@ -113,7 +114,7 @@ export function NotificationsScreen() {
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <section className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center shadow-sm">
+          <section className="rounded-[28px] border border-dashed border-slate-300 bg-white px-6 py-10 text-center shadow-sm">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
               <Bell className="h-7 w-7" />
             </div>
@@ -129,14 +130,14 @@ export function NotificationsScreen() {
               return (
                 <div
                   key={notification.id}
-                  className={`rounded-3xl border p-5 shadow-sm transition-colors ${
+                  className={`rounded-[28px] border p-5 shadow-sm transition-colors ${
                     notification.is_read
                       ? 'border-slate-200 bg-white'
                       : 'border-blue-100 bg-blue-50/60'
                   }`}
                 >
                   <div className="flex items-start gap-4">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border shadow-sm ${
                       notification.is_read
                         ? 'border-slate-100 bg-slate-50 text-slate-600'
                         : 'border-blue-100 bg-white text-blue-700'
@@ -154,7 +155,7 @@ export function NotificationsScreen() {
                           </div>
                         </div>
                         {!notification.is_read && (
-                          <span className="rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                          <span className="rounded-full bg-blue-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
                             Nouveau
                           </span>
                         )}

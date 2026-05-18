@@ -62,27 +62,30 @@ export function ProfileScreen() {
     <motion.div 
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      className="flex flex-col h-full overflow-y-auto bg-slate-50 pb-24"
+      className="flex flex-col h-full overflow-y-auto bg-[linear-gradient(180deg,_#f8fbff_0%,_#f8fafc_34%,_#f8fafc_100%)] pb-28"
     >
-      <div className="bg-white px-6 pt-12 pb-8 border-b border-slate-200">
+      <div className="relative overflow-hidden rounded-b-[32px] bg-[linear-gradient(135deg,_#0f172a_0%,_#1e3a8a_52%,_#2563eb_100%)] px-6 pb-8 pt-12 text-white shadow-sm">
+        <div className="absolute -right-12 top-0 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute left-0 top-10 h-24 w-24 rounded-full bg-blue-300/20 blur-2xl" />
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 p-1 cursor-pointer relative border border-blue-200 overflow-hidden">
+          <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-blue-600 p-1 cursor-pointer relative border border-white/30 overflow-hidden shadow-lg">
              <img src={profile?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.id}`} alt="avatar" className="w-full h-full object-cover" />
              <div className="absolute bottom-0 right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-100">Mon espace</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight">
               {profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur'}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">{user?.email}</p>
+            <p className="text-sm text-blue-100/90 mt-1">{user?.email}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              <div className="inline-flex border border-slate-200 rounded-lg px-3 py-1 text-xs font-semibold text-slate-700 bg-slate-50">
+              <div className="inline-flex border border-white/20 rounded-full px-3 py-1 text-xs font-semibold text-white bg-white/10 backdrop-blur-sm">
                 Mode {getRoleLabel(profile?.role)}
               </div>
-              <div className={`inline-flex rounded-lg px-3 py-1 text-xs font-semibold border ${
+              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold border ${
                 profile?.is_available !== false
-                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                  : 'border-slate-200 bg-slate-100 text-slate-600'
+                  ? 'border-emerald-200/80 bg-emerald-400/15 text-emerald-50'
+                  : 'border-white/20 bg-white/10 text-blue-100'
               }`}>
                 {profile?.is_available !== false ? 'Disponible' : 'Indisponible'}
               </div>
@@ -91,23 +94,23 @@ export function ProfileScreen() {
         </div>
       </div>
 
-      <div className="mt-6 px-4">
+      <div className="-mt-2 px-4">
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div className="bg-white rounded-[28px] border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 text-slate-500">
               <Star className="w-4 h-4 text-amber-500" />
               <span className="text-[11px] font-bold uppercase tracking-wide">Note</span>
             </div>
             <p className="mt-2 text-xl font-bold text-slate-900">{(profile?.rating || 0).toFixed(1)}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div className="bg-white rounded-[28px] border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 text-slate-500">
               <BadgeCheck className="w-4 h-4 text-blue-600" />
               <span className="text-[11px] font-bold uppercase tracking-wide">Avis</span>
             </div>
             <p className="mt-2 text-xl font-bold text-slate-900">{profile?.reviews_count || 0}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div className="bg-white rounded-[28px] border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 text-slate-500">
               <BriefcaseBusiness className="w-4 h-4 text-indigo-600" />
               <span className="text-[11px] font-bold uppercase tracking-wide">Missions</span>
@@ -118,18 +121,18 @@ export function ProfileScreen() {
       </div>
 
       <div className="mt-6 px-4 space-y-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">A propos</h2>
+        <div className="bg-white rounded-[28px] border border-slate-200 p-5 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">A propos</h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-700">
             {profile?.bio || "Ajoutez une bio pour presenter votre experience et rassurer les voisins."}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Informations du profil</h2>
+        <div className="bg-white rounded-[28px] border border-slate-200 p-5 shadow-sm space-y-4">
+          <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Informations du profil</h2>
 
           <div className="grid grid-cols-1 gap-3">
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+            <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
               <div className="flex items-center gap-2 text-slate-500">
                 <MapPin className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">Adresse</span>
@@ -137,7 +140,7 @@ export function ProfileScreen() {
               <p className="mt-2 text-sm font-medium text-slate-900">{profile?.address || 'Non renseignee'}</p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+            <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
               <div className="flex items-center gap-2 text-slate-500">
                 <CalendarDays className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">Membre depuis</span>
@@ -149,8 +152,8 @@ export function ProfileScreen() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Competences</h2>
+        <div className="bg-white rounded-[28px] border border-slate-200 p-5 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Competences</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {(profile?.skills && profile.skills.length > 0 ? profile.skills : ['Aucune competence renseignee']).map((skill, index) => (
               <span key={`${skill}-${index}`} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700">
@@ -162,11 +165,11 @@ export function ProfileScreen() {
       </div>
 
       <div className="mt-6 px-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-[28px] shadow-sm border border-slate-200 overflow-hidden">
           {menuItems.map((item, index) => (
-             <div key={item.label} onClick={item.action} className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 ${index !== menuItems.length - 1 ? 'border-b border-slate-100' : ''}`}>
+             <div key={item.label} onClick={item.action} className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors ${index !== menuItems.length - 1 ? 'border-b border-slate-100' : ''}`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
+                  <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
                      <item.icon className="w-5 h-5 text-slate-600" />
                   </div>
                   <span className="font-medium text-slate-900 text-sm">{item.label}</span>
@@ -181,7 +184,7 @@ export function ProfileScreen() {
       </div>
       
       <div className="mt-8 px-4">
-         <button onClick={handleLogout} className="w-full bg-white border border-slate-200 text-slate-900 font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-50 shadow-sm transition-colors text-sm">
+         <button onClick={handleLogout} className="w-full bg-white border border-slate-200 text-slate-900 font-bold py-4 rounded-[28px] flex items-center justify-center gap-2 hover:bg-slate-50 shadow-sm transition-colors text-sm">
             <LogOut className="w-4 h-4" />
             Déconnexion
          </button>

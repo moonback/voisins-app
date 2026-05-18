@@ -33,7 +33,38 @@ type ActionItemProps = {
   label: string;
   description: string;
   value?: string;
+  onClick?: () => void;
 };
+
+const SETTINGS_STORAGE_KEY = 'voisins-app-settings';
+
+type PreferencesState = {
+  pushNotifications: boolean;
+  emailNotifications: boolean;
+  darkMode: boolean;
+  locationSharing: boolean;
+};
+
+type SecurityPanel = 'password' | 'privacy' | 'support' | null;
+
+const defaultPreferences: PreferencesState = {
+  pushNotifications: true,
+  emailNotifications: false,
+  darkMode: false,
+  locationSharing: true,
+};
+
+function loadStoredPreferences(): PreferencesState {
+  if (typeof window === 'undefined') return defaultPreferences;
+
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (!raw) return defaultPreferences;
+    return { ...defaultPreferences, ...JSON.parse(raw) };
+  } catch {
+    return defaultPreferences;
+  }
+}
 
 function PreferenceItem({ icon: Icon, label, description, enabled, onToggle }: PreferenceItemProps) {
   return (
@@ -66,10 +97,11 @@ function PreferenceItem({ icon: Icon, label, description, enabled, onToggle }: P
   );
 }
 
-function ActionItem({ icon: Icon, label, description, value = 'Bientot' }: ActionItemProps) {
+function ActionItem({ icon: Icon, label, description, value = 'Disponible', onClick }: ActionItemProps) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-colors hover:bg-slate-50"
     >
       <div className="flex items-start gap-3">
@@ -113,12 +145,10 @@ export function SettingsScreen() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const [preferences, setPreferences] = useState({
-    pushNotifications: true,
-    emailNotifications: false,
-    darkMode: false,
-    locationSharing: true,
-  });
+  const [preferences, setPreferences] = useState<PreferencesState>(loadStoredPreferences);
+  const [activePanel, setActivePanel] = useState<SecurityPanel>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [form, setForm] = useState<ProfileFormState>({
     first_name: '',
     last_name: '',
@@ -156,11 +186,56 @@ export function SettingsScreen() {
     });
   }, [profile]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(preferences));
+    document.documentElement.classList.toggle('dark-app', preferences.darkMode);
+  }, [preferences]);
+
   const togglePreference = (key: keyof typeof preferences) => {
+    setActionMessage(null);
     setPreferences((current) => ({
       ...current,
       [key]: !current[key],
     }));
+  };
+
+  const handleSendPasswordReset = async () => {
+    if (!user?.email) {
+      setActionMessage("Impossible d'envoyer le lien sans email de compte.");
+      return;
+    }
+
+    setSendingResetEmail(true);
+    setActionMessage(null);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+
+    if (error) {
+      setActionMessage(error.message);
+      setSendingResetEmail(false);
+      return;
+    }
+
+    setActionMessage(`Un lien de reinitialisation a ete envoye a ${user.email}.`);
+    setSendingResetEmail(false);
+  };
+
+  const handleContactSupport = async () => {
+    const supportEmail = 'support@voisins.app';
+    const subject = encodeURIComponent('Support Voisins App');
+    const body = encodeURIComponent(`Bonjour,\n\nJ'ai besoin d'aide concernant mon compte ${user?.email || ''}.\n\nMerci.`);
+
+    try {
+      await navigator.clipboard.writeText(supportEmail);
+      setActionMessage(`Adresse support copiee : ${supportEmail}`);
+    } catch {
+      setActionMessage(`Contact support : ${supportEmail}`);
+    }
+
+    window.location.href = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
   };
 
   const handleSaveProfile = async () => {
@@ -504,19 +579,160 @@ export function SettingsScreen() {
               icon={Lock}
               label="Mot de passe"
               description="Mettez a jour la securite de votre compte."
+              value={user?.email ? 'Email' : 'Compte'}
+              onClick={() => {
+                setActionMessage(null);
+                setActivePanel('password');
+              }}
             />
             <ActionItem
               icon={Shield}
               label="Confidentialite"
               description="Consultez les regles de visibilite et de protection."
+              value="Infos"
+              onClick={() => {
+                setActionMessage(null);
+                setActivePanel('privacy');
+              }}
             />
             <ActionItem
               icon={HelpCircle}
               label="Aide et support"
               description="Trouvez des reponses rapides pour utiliser l'application."
+              value="Contact"
+              onClick={() => {
+                setActionMessage(null);
+                setActivePanel('support');
+              }}
             />
           </div>
         </section>
+
+        {activePanel === 'password' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50">
+                <Lock className="h-6 w-6 text-slate-700" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Reinitialiser le mot de passe</h2>
+                <p className="text-sm text-slate-500">Envoyez un lien securise sur votre email de connexion.</p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Email du compte</p>
+              <p className="mt-2 text-sm font-medium text-slate-900">{user?.email || 'Non renseigne'}</p>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={handleSendPasswordReset}
+                disabled={sendingResetEmail}
+                className="flex-1 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-70"
+              >
+                {sendingResetEmail ? 'Envoi...' : 'Envoyer le lien'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePanel(null)}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+              >
+                Fermer
+              </button>
+            </div>
+          </section>
+        )}
+
+        {activePanel === 'privacy' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50">
+                <Shield className="h-6 w-6 text-blue-700" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Visibilite du profil</h2>
+                <p className="text-sm text-slate-500">Resume concret des informations visibles dans l'application.</p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                Votre profil public peut afficher le prenom, le nom, l'avatar, la bio, les competences, la zone, la note et le nombre d'avis.
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                Vos informations de connexion ne sont pas affichees dans le profil public. L'email reste prive.
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                La disponibilite et la localisation partagee influencent surtout les missions et suggestions de proximite.
+              </div>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => navigate(`/user/${user?.id}`)}
+                className="flex-1 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+              >
+                Voir mon profil public
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePanel(null)}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+              >
+                Fermer
+              </button>
+            </div>
+          </section>
+        )}
+
+        {activePanel === 'support' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50">
+                <HelpCircle className="h-6 w-6 text-emerald-700" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Support</h2>
+                <p className="text-sm text-slate-500">Contactez l'assistance avec votre application mail.</p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Contact</p>
+              <p className="mt-2 text-sm font-medium text-slate-900">support@voisins.app</p>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={handleContactSupport}
+                className="flex-1 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+              >
+                Contacter le support
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePanel(null)}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+              >
+                Fermer
+              </button>
+            </div>
+          </section>
+        )}
+
+        {actionMessage && (
+          <section className={`rounded-3xl border p-4 text-sm font-medium shadow-sm ${
+            actionMessage.includes('envoye') || actionMessage.includes('copiee') || actionMessage.includes('Contact')
+              ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+              : 'border-rose-100 bg-rose-50 text-rose-700'
+          }`}>
+            {actionMessage}
+          </section>
+        )}
 
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-slate-500">

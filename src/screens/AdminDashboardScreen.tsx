@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Briefcase, TrendingUp, AlertTriangle, ShieldCheck, Trash2 } from 'lucide-react';
+import { ArrowLeft, Users, Briefcase, TrendingUp, AlertTriangle, ShieldCheck, Trash2, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -9,6 +9,8 @@ export function AdminDashboardScreen() {
   const [stats, setStats] = useState({ users: 0, missions: 0, revenue: 0 });
   const [recentMissions, setRecentMissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllHistory, setShowAllHistory] = useState(false);
+  const [showKycDetails, setShowKycDetails] = useState(false);
 
   useEffect(() => {
     async function fetchAdminData() {
@@ -37,12 +39,12 @@ export function AdminDashboardScreen() {
         revenue
       });
 
-      // Fetch recent missions for moderation
+      // Fetch missions for moderation history
       const { data: missions } = await supabase
         .from('missions')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(20);
 
       if (missions) {
         setRecentMissions(missions);
@@ -60,6 +62,8 @@ export function AdminDashboardScreen() {
        setStats(s => ({ ...s, missions: Math.max(0, s.missions - 1) }));
     }
   };
+
+  const displayedMissions = showAllHistory ? recentMissions : recentMissions.slice(0, 5);
 
   return (
     <motion.div 
@@ -124,7 +128,7 @@ export function AdminDashboardScreen() {
                  <div className="p-6 text-center text-slate-500 text-sm">Aucune mission trouvée.</div>
                ) : (
                  <div className="divide-y divide-slate-100">
-                    {recentMissions.map((mission) => (
+                    {displayedMissions.map((mission) => (
                       <div key={mission.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                          <div className="flex-1 min-w-0 pr-4">
                             <h4 className="font-bold text-slate-900 text-sm truncate">{mission.title}</h4>
@@ -145,9 +149,16 @@ export function AdminDashboardScreen() {
                     ))}
                  </div>
                )}
-               <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                 <button className="text-sm font-bold text-slate-600 hover:text-slate-900">Voir tout l'historique</button>
-               </div>
+               {recentMissions.length > 5 && (
+                 <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
+                   <button
+                     onClick={() => setShowAllHistory((current) => !current)}
+                     className="text-sm font-bold text-slate-600 hover:text-slate-900"
+                   >
+                     {showAllHistory ? 'Voir moins' : "Voir tout l'historique"}
+                   </button>
+                 </div>
+               )}
             </div>
          </div>
 
@@ -163,10 +174,22 @@ export function AdminDashboardScreen() {
                   <ShieldCheck className="w-8 h-8 text-emerald-500" />
                </div>
                <h4 className="font-bold text-slate-900 mb-1">Aucune validation en attente</h4>
-               <p className="text-xs text-slate-500 mb-4">Tous les utilisateurs récemment inscrits ont une identité confirmée.</p>
-               <button className="bg-slate-900 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                  Configurer prestataire KYC
+               <p className="text-xs text-slate-500 mb-4">Le tableau actuel ne contient pas encore de workflow KYC dedie en base.</p>
+               <button
+                  onClick={() => setShowKycDetails((current) => !current)}
+                  className="inline-flex items-center gap-2 bg-slate-900 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+               >
+                  <Info className="w-4 h-4" />
+                  {showKycDetails ? 'Masquer le detail' : 'Voir le detail technique'}
                </button>
+
+               {showKycDetails && (
+                 <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-xs leading-relaxed text-slate-600">
+                   Pour un vrai KYC, il faut ajouter une table dediee de type `identity_verifications`,
+                   stocker le statut de verification par utilisateur et brancher un prestataire externe.
+                   L'UI admin peut ensuite afficher les dossiers en attente, les pieces jointes et les statuts.
+                 </div>
+               )}
             </div>
          </div>
       </div>

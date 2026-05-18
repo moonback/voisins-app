@@ -66,7 +66,7 @@ export function HomeScreen() {
 
   return (
     <div 
-      className="h-full overflow-hidden bg-slate-50 relative"
+      className="h-full overflow-hidden bg-[linear-gradient(180deg,_#f8fbff_0%,_#f8fafc_28%,_#f8fafc_100%)] relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -88,22 +88,25 @@ export function HomeScreen() {
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="flex flex-col h-full bg-slate-50 pb-24 relative overflow-y-auto"
+      className="flex flex-col h-full bg-transparent pb-28 relative overflow-y-auto"
       style={{ zIndex: 10 }}
     >
-      <div className="bg-white px-6 pt-12 pb-6 border-b border-slate-200 z-10 sticky top-0 shrink-0">
+      <div className="z-10 sticky top-0 shrink-0 border-b border-slate-200/80 bg-white/88 px-6 pb-6 pt-12 backdrop-blur-xl">
         <div className="flex justify-between items-center">
            <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Bonjour, {user?.email?.split('@')[0] || 'Voisin'}</h1>
+              <span className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                Autour de vous
+              </span>
+              <h1 className="mt-3 text-2xl font-bold text-slate-900 tracking-tight">Bonjour, {user?.email?.split('@')[0] || 'Voisin'}</h1>
               <p className="text-sm text-slate-500 mt-1">De quoi avez-vous besoin aujourd'hui ?</p>
            </div>
            
-           <button onClick={() => navigate('/map')} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 active:scale-95 transition-transform border border-slate-200">
+           <button onClick={() => navigate('/map')} className="h-11 w-11 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-600 active:scale-95 transition-transform">
               <Map className="w-5 h-5" />
            </button>
         </div>
         
-        <div className="mt-6 flex items-center bg-white rounded-xl px-4 py-3 border border-slate-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all">
+        <div className="mt-6 flex items-center rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-[0_14px_30px_rgba(15,23,42,0.06)] focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all">
           <Search className="w-5 h-5 text-slate-400" />
           <input 
             type="text" 
@@ -114,8 +117,23 @@ export function HomeScreen() {
         </div>
       </div>
 
-      <div className="px-6 mt-6">
-        <h2 className="text-lg font-bold text-slate-900 tracking-tight">Catégories</h2>
+      <div className="mt-6 px-6">
+        <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Explorer</p>
+            <h2 className="mt-2 text-lg font-bold text-slate-900 tracking-tight">Catégories</h2>
+          </div>
+          {selectedCategory && (
+            <button
+              type="button"
+              onClick={() => setSelectedCategory(null)}
+              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600"
+            >
+              Tout voir
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-4 gap-4 mt-4">
           {categories.map((cat, i) => (
             <motion.div 
@@ -126,10 +144,10 @@ export function HomeScreen() {
               onClick={() => setSelectedCategory((current) => current === cat.id ? null : cat.id)}
               className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform"
             >
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center border transition-colors ${
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-colors ${
                 selectedCategory === cat.id
-                  ? 'bg-blue-50 text-blue-700 border-blue-100'
-                  : 'bg-white text-slate-600 border-slate-200 shadow-sm'
+                  ? 'bg-blue-50 text-blue-700 border-blue-100 shadow-sm'
+                  : 'bg-slate-50 text-slate-600 border-slate-200'
               }`}>
                 <cat.icon className="w-6 h-6" />
               </div>
@@ -141,17 +159,21 @@ export function HomeScreen() {
             </motion.div>
           ))}
         </div>
+        </div>
       </div>
       
       <div className="px-6 mt-8">
         <div className="flex justify-between items-end mb-4">
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-            {selectedCategory ? `Missions - ${categories.find((cat) => cat.id === selectedCategory)?.name}` : 'Missions a proximite'}
-          </h2>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Selection</p>
+            <h2 className="mt-2 text-lg font-bold text-slate-900 tracking-tight">
+              {selectedCategory ? `Missions - ${categories.find((cat) => cat.id === selectedCategory)?.name}` : 'Missions a proximite'}
+            </h2>
+          </div>
           <button
             type="button"
             onClick={() => navigate(selectedCategory ? `/search?category=${selectedCategory}` : '/search')}
-            className="text-sm font-bold text-blue-600 active:opacity-70"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-bold text-blue-600 shadow-sm active:opacity-70"
           >
             Voir tout
           </button>
@@ -185,9 +207,9 @@ export function HomeScreen() {
                const missionImages = getMissionImageUrls(mission);
 
                return (
-               <div key={mission.id} onClick={() => navigate(`/mission/${mission.id}`)} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-4 cursor-pointer hover:shadow-md transition-shadow">
+               <div key={mission.id} onClick={() => navigate(`/mission/${mission.id}`)} className="bg-white p-5 rounded-[28px] shadow-sm border border-slate-200 flex flex-col gap-4 cursor-pointer hover:shadow-md transition-shadow">
                  {missionImages.length > 0 && (
-                   <div className="w-full h-44 overflow-hidden rounded-xl bg-slate-100">
+                   <div className="w-full h-44 overflow-hidden rounded-2xl bg-slate-100">
                      <img
                        src={missionImages[0]}
                        alt={mission.title}
@@ -196,10 +218,10 @@ export function HomeScreen() {
                    </div>
                  )}
                  <div className="flex justify-between items-start">
-                    <span className={`px-2.5 py-1 ${mission.status === 'open' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'} text-[10px] font-bold rounded-full uppercase tracking-tight`}>
+                    <span className={`px-3 py-1.5 ${mission.status === 'open' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-slate-50 text-slate-600 border-slate-200'} text-[10px] font-bold rounded-full uppercase tracking-tight border`}>
                        {mission.status === 'open' ? 'Ouvert' : mission.status}
                     </span>
-                    <span className="text-lg font-bold text-slate-900">
+                    <span className="rounded-2xl bg-slate-50 px-3 py-1.5 text-lg font-bold text-slate-900 border border-slate-200">
                        {mission.budget}€
                     </span>
                  </div>
@@ -210,8 +232,8 @@ export function HomeScreen() {
                    <p className="text-slate-500 text-sm line-clamp-2">{mission.description}</p>
                  </div>
                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <div className="flex items-center gap-2">
-                       <div className="w-6 h-6 rounded-full bg-slate-200 overflow-hidden">
+                    <div className="flex items-center gap-3 min-w-0">
+                       <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden border border-slate-200">
                           <img
                             src={mission.client?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${mission.client_id}`}
                             alt="avatar"
@@ -219,16 +241,16 @@ export function HomeScreen() {
                           />
                        </div>
                        <div className="min-w-0">
-                         <p className="text-xs font-semibold text-slate-700 truncate">
+                         <p className="text-sm font-semibold text-slate-800 truncate">
                            {`${mission.client?.first_name || ''} ${mission.client?.last_name || ''}`.trim() || 'Voisin'}
                          </p>
-                         <span className="text-xs text-slate-600 font-medium capitalize flex items-center gap-1">
+                         <span className="text-xs text-slate-500 font-medium capitalize flex items-center gap-1">
                            <Map className="w-3 h-3 text-slate-400" />
                            {(mission as { address?: string }).address || mission.location || 'Non specifie'}
                          </span>
                        </div>
                     </div>
-                    <button className="text-blue-600 text-xs font-bold">Voir les détails</button>
+                    <button className="rounded-full bg-slate-900 px-3 py-1.5 text-white text-xs font-bold shadow-sm">Voir</button>
                  </div>
                </div>
              )})
@@ -240,7 +262,7 @@ export function HomeScreen() {
       <motion.button 
          whileTap={{ scale: 0.9 }}
          onClick={() => navigate('/create')}
-         className="fixed bottom-24 right-6 w-14 h-14 bg-slate-900 text-white rounded-xl shadow-lg flex items-center justify-center z-20 md:absolute"
+         className="fixed bottom-24 right-6 h-14 w-14 rounded-2xl bg-slate-900 text-white shadow-[0_18px_34px_rgba(15,23,42,0.22)] flex items-center justify-center z-20 md:absolute"
       >
          <Plus className="w-6 h-6" />
       </motion.button>

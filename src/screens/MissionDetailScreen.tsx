@@ -133,7 +133,7 @@ export function MissionDetailScreen() {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="flex flex-col h-full bg-slate-50 relative"
+      className="flex flex-col h-full bg-[linear-gradient(180deg,_#f8fbff_0%,_#f8fafc_34%,_#f8fafc_100%)] relative"
     >
       <div className="absolute top-0 left-0 w-full h-64 bg-slate-200 z-0 overflow-hidden">
         {missionImages.length > 0 ? (
@@ -143,28 +143,34 @@ export function MissionDetailScreen() {
              <MapPin className="w-16 h-16 text-blue-200" />
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/35 via-slate-900/10 to-transparent" />
       </div>
 
       <div className="px-6 pt-12 pb-4 flex justify-between items-center z-10 relative">
-        <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white shadow-sm border border-slate-200 rounded-full flex items-center justify-center -ml-2 text-slate-600 hover:bg-slate-50 transition-colors">
+        <button onClick={() => navigate(-1)} className="w-11 h-11 bg-white/92 shadow-sm border border-white/80 rounded-2xl flex items-center justify-center text-slate-700 hover:bg-white transition-colors backdrop-blur-sm">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-tight bg-white border border-slate-200 shadow-sm ${mission.status === 'open' ? 'text-blue-700' : 'text-slate-600'}`}>
+        <span className={`px-3 py-1.5 text-xs font-bold rounded-full uppercase tracking-tight bg-white/92 border border-white/80 shadow-sm backdrop-blur-sm ${mission.status === 'open' ? 'text-blue-700' : 'text-slate-600'}`}>
            {mission.status}
         </span>
       </div>
 
-      <div className="flex-1 bg-white rounded-t-3xl mt-16 z-10 relative px-6 py-8 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] overflow-y-auto">
+      <div className="flex-1 bg-white rounded-t-[32px] mt-16 z-10 relative px-6 py-8 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] overflow-y-auto">
         <div className="flex justify-between items-start gap-4 mb-6">
-           <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-snug flex-1">
-              {mission.title}
-           </h1>
-           <div className="text-xl font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 shrink-0">
+           <div className="flex-1">
+             <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+               {mission.category}
+             </span>
+             <h1 className="mt-3 text-2xl font-bold text-slate-900 tracking-tight leading-snug">
+                {mission.title}
+             </h1>
+           </div>
+           <div className="text-xl font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-2xl border border-blue-100 shrink-0 shadow-sm">
              {mission.budget}€
            </div>
         </div>
 
-        <div className="flex items-center gap-3 pb-6 mb-6 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors rounded-xl p-2 -ml-2" onClick={() => navigate(`/user/${mission.client_id}`)}>
+        <div className="flex items-center gap-3 pb-6 mb-6 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors rounded-2xl p-3 -mx-1" onClick={() => navigate(`/user/${mission.client_id}`)}>
            <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shadow-inner">
               <img
                 src={mission.client?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${mission.client_id}`}
@@ -181,13 +187,13 @@ export function MissionDetailScreen() {
         </div>
 
         <div className="space-y-6 pb-24">
-           <div>
-              <h3 className="text-sm font-bold text-slate-900 mb-2">Description</h3>
+           <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 mb-3">Description</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{mission.description}</p>
            </div>
            
            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3">
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm">
                  <div className="bg-blue-100 p-2 rounded-lg text-blue-600"><MapPin className="w-4 h-4" /></div>
                  <div>
                     <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Lieu</div>
@@ -196,14 +202,14 @@ export function MissionDetailScreen() {
                     </div>
                  </div>
               </div>
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3">
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm">
                  <div className="bg-green-100 p-2 rounded-lg text-green-600"><Calendar className="w-4 h-4" /></div>
                  <div>
                     <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Date</div>
                     <div className="text-xs font-bold text-slate-700">{mission.date ? new Date(mission.date).toLocaleDateString('fr-FR') : 'Dès que possible'}</div>
                  </div>
               </div>
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3">
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm">
                  <div className="bg-orange-100 p-2 rounded-lg text-orange-600"><Clock className="w-4 h-4" /></div>
                  <div>
                     <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Durée estimée</div>
@@ -213,10 +219,10 @@ export function MissionDetailScreen() {
            </div>
 
            {mission.provider && (
-             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+             <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Voisin selectionne</div>
                <div
-                 className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
+                 className="mt-3 flex items-center gap-3 rounded-2xl bg-slate-50 p-3 border border-slate-200 cursor-pointer hover:bg-white transition-colors"
                  onClick={() => navigate(`/user/${mission.provider_id}`)}
                >
                  <div className="h-12 w-12 overflow-hidden rounded-full bg-slate-200">
@@ -237,7 +243,7 @@ export function MissionDetailScreen() {
            )}
            
            {isOwner && mission.status === 'assigned' && (
-             <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mt-6 text-center">
+             <div className="bg-blue-50 border border-blue-100 rounded-[28px] p-5 mt-6 text-center shadow-sm">
                 <h3 className="font-bold text-blue-900 text-sm mb-2">Mission en cours</h3>
                 <p className="text-blue-700 text-xs mb-4">L'argent est bloqué sur notre compte sécurisé. Validez la mission pour payer votre voisin.</p>
                 <button
@@ -253,7 +259,7 @@ export function MissionDetailScreen() {
            )}
 
            {mission.status === 'completed' && (
-             <div className="bg-green-50 border border-green-100 rounded-xl p-5 mt-6 flex flex-col items-center">
+             <div className="bg-green-50 border border-green-100 rounded-[28px] p-5 mt-6 flex flex-col items-center shadow-sm">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
                   <Star className="w-6 h-6 fill-current" />
                 </div>
@@ -261,7 +267,7 @@ export function MissionDetailScreen() {
                 <p className="text-green-700 text-xs text-center mb-6">Le voisin a été payé avec succès !</p>
                 
                 {isOwner && !hasReviewed && (
-                   <div className="w-full bg-white p-4 rounded-xl border border-green-200">
+                   <div className="w-full bg-white p-4 rounded-2xl border border-green-200 shadow-sm">
                      <h4 className="font-bold text-slate-900 text-sm mb-3">Laisser un avis</h4>
                      <div className="flex gap-2 mb-3">
                         {[1,2,3,4,5].map((star) => (
@@ -276,7 +282,7 @@ export function MissionDetailScreen() {
                        value={reviewText}
                        onChange={(e) => setReviewText(e.target.value)}
                        placeholder="Un petit mot sur ce voisin ?"
-                       className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none mb-3 resize-none"
+                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none mb-3 resize-none"
                      ></textarea>
                      <button
                        onClick={async () => {
@@ -290,7 +296,7 @@ export function MissionDetailScreen() {
                          }]);
                          setHasReviewed(true);
                        }}
-                       className="w-full bg-slate-900 text-white font-bold py-2.5 rounded-lg text-sm active:scale-95 transition-transform"
+                       className="w-full bg-slate-900 text-white font-bold py-3 rounded-2xl text-sm active:scale-95 transition-transform"
                      >
                        Publier l'avis
                      </button>
@@ -309,7 +315,7 @@ export function MissionDetailScreen() {
                 <h3 className="font-bold text-slate-900 mb-4 text-sm mt-8 border-t border-slate-100 pt-6">Propositions reçues ({offers.length})</h3>
                 <div className="space-y-4">
                    {offers.map((offer) => (
-                     <div key={offer.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div key={offer.id} className="bg-white p-4 rounded-[28px] border border-slate-200 shadow-sm">
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 disabled:opacity-70 transition-opacity" onClick={() => navigate(`/user/${offer.provider_id}`)}>
                             <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
@@ -317,9 +323,9 @@ export function MissionDetailScreen() {
                             </div>
                             <span className="font-bold text-slate-900 text-sm">{offer.provider?.first_name || 'Voisin'}</span>
                           </div>
-                          <div className="text-sm font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-slate-200">{offer.proposed_price}€</div>
+                          <div className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-2xl shadow-sm border border-blue-100">{offer.proposed_price}€</div>
                         </div>
-                        <p className="text-slate-600 text-sm mb-4 leading-relaxed bg-white p-3 rounded-xl border border-slate-100">{offer.message}</p>
+                        <p className="text-slate-600 text-sm mb-4 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-200">{offer.message}</p>
                         
                         {mission.status === 'open' && (
                            <div className="flex gap-2">
@@ -361,7 +367,7 @@ export function MissionDetailScreen() {
            )}
 
            {!isOwner && mission.status === 'open' && (
-              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 mt-8">
+              <div className="bg-white rounded-[28px] p-5 border border-slate-200 mt-8 shadow-sm">
                  <h3 className="font-bold text-slate-900 mb-4 text-sm">Faire une offre</h3>
                  
                  {offerStatus === 'success' ? (
